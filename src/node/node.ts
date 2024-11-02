@@ -1,32 +1,53 @@
-import { gossipsub } from "@chainsafe/libp2p-gossipsub";
-import { noise } from "@chainsafe/libp2p-noise";
-import { yamux } from "@chainsafe/libp2p-yamux";
-import { identify, identifyPush } from "@libp2p/identify";
 import { tcp } from "@libp2p/tcp";
 import { webSockets } from "@libp2p/websockets";
-import { createLibp2p } from "libp2p";
-// import { multiaddr } from "multiaddr";
-// import { fromString as uint8ArrayFromString } from "uint8arrays/from-string";
-// import { toString as uint8ArrayToString } from "uint8arrays/to-string";
-
-const createNode = async (addresses?: string[]) => {
-  const node = await createLibp2p({
-    addresses: {
-      listen: addresses ?? ["/ip4/0.0.0.0/tcp/0", "/ip4/0.0.0.0/tcp/0/ws"],
-    },
-    transports: [tcp(), webSockets()],
-    streamMuxers: [yamux()],
-    connectionEncrypters: [noise()],
-    services: {
-      pubsub: gossipsub(),
-      identify: identify(),
-      identifyPush: identifyPush(),
-    },
-  });
-
-  return node;
-};
-
+import { type Libp2p } from "libp2p";
+import { createBaseNode, createClientNode } from "./utils.js";
 export class Node {
-  constructor(public value: number, public next: Node | null = null) {}
+  private libp2p: Libp2p;
+  private subscriptionMap: Map<string, Array<(data: unknown) => void>> =
+    new Map();
+  constructor(libp2p: Libp2p) {
+    this.libp2p = libp2p;
+  }
+
+  async baseNode() {
+    const libp2p = await createBaseNode();
+    return new Node(libp2p);
+  }
+
+  async clientNode() {
+    const libp2p = await createClientNode([tcp()] as never);
+    return new Node(libp2p);
+  }
+
+  async webClientNode() {
+    const libp2p = await createClientNode([webSockets()] as never);
+    return new Node(libp2p);
+  }
+
+  eventHandler = (event: CustomEvent) => {
+    // check subscriptionMap to determine if we have a callback for this topic.
+    const { topic, data } = event.detail;
+
+    if (this.subscriptionMap.has(topic)) {
+      const callbacks = this.subscriptionMap.get(topic);
+      callbacks?.forEach((callback) => {
+        callback(data);
+      });
+    }
+  };
+
+  subscribe(topic: string, callback: (data: unknown) => void) {
+    // @ts-expect-error libp2p needs proper typing
+    this.libp2p.services.pubsub.subscribe(topic);
+    if (this.subscriptionMap.has(topic)) {
+      const callbacks = this.subscriptionMap.get(topic);
+      callbacks?.push(callback);
+    } else {
+      this.subscriptionMap.set(topic, [callback]);
+    }
+    // add Callback
+  }
+
+  //
 }
