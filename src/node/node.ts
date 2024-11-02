@@ -1,13 +1,21 @@
 import { tcp } from "@libp2p/tcp";
 import { webSockets } from "@libp2p/websockets";
 import { type Libp2p } from "libp2p";
-import { createBaseNode, createClientNode } from "./utils.js";
+import { createBaseNode, createClientNode, decodeEvent } from "./utils.js";
+import { BOOTSTRAP_PEERS } from "./constants.js";
+import { multiaddr } from "multiaddr";
 export class Node {
   private libp2p: Libp2p;
   private subscriptionMap: Map<string, Array<(data: unknown) => void>> =
     new Map();
   constructor(libp2p: Libp2p) {
     this.libp2p = libp2p;
+    // connect node to bootstrap peers.
+    if (BOOTSTRAP_PEERS.length > 0) {
+      this.libp2p.dial(BOOTSTRAP_PEERS.map((peer) => multiaddr(peer)));
+    } else {
+      throw new Error("No bootstrap peers provided.");
+    }
   }
 
   async baseNode() {
@@ -25,17 +33,18 @@ export class Node {
     return new Node(libp2p);
   }
 
-  eventHandler = (event: CustomEvent) => {
-    // check subscriptionMap to determine if we have a callback for this topic.
-    const { topic, data } = event.detail;
-
+  eventHandler(event: CustomEvent) {
+    const { topic } = event.detail;
+    const decoded = decodeEvent(event);
+    console.log("Received message on topic: ", topic);
     if (this.subscriptionMap.has(topic)) {
       const callbacks = this.subscriptionMap.get(topic);
+      console.log("Firing off callbacks: ", callbacks?.length);
       callbacks?.forEach((callback) => {
-        callback(data);
+        callback(decoded);
       });
     }
-  };
+  }
 
   subscribe(topic: string, callback: (data: unknown) => void) {
     // @ts-expect-error libp2p needs proper typing
@@ -46,7 +55,18 @@ export class Node {
     } else {
       this.subscriptionMap.set(topic, [callback]);
     }
-    // add Callback
+  }
+
+  unsubscribe(topic: string) {
+    console.log("Unsubscribing from topic: ", topic);
+    // @ts-expect-error libp2p needs proper typing
+    this.libp2p.services.pubsub.unsubscribe(topic);
+    this.subscriptionMap.delete(topic);
+  }
+
+  send(topic: string, data: unknown) {
+    // @ts-expect-error libp2p needs proper typing
+    this.libp2p.services.pubsub.publish(topic, data);
   }
 
   //

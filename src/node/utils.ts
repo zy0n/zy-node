@@ -7,8 +7,8 @@ import { webSockets } from "@libp2p/websockets";
 import { createLibp2p } from "libp2p";
 
 // import { multiaddr } from "multiaddr";
-// import { fromString as uint8ArrayFromString } from "uint8arrays/from-string";
-// import { toString as uint8ArrayToString } from "uint8arrays/to-string";
+import { fromString as uint8ArrayFromString } from "uint8arrays/from-string";
+import { toString as uint8ArrayToString } from "uint8arrays/to-string";
 const createNode = async (addresses?: string[], transports?: never) => {
   const node = await createLibp2p({
     addresses: {
@@ -55,4 +55,9 @@ export const createClientNode = async (transports?: never) => {
   // supplying [] for the node addresses will cause it to not 'accept' connections, but allow messages to be sent.
   const node = await createNode([], transports);
   return node;
+};
+
+export const decodeEvent = (event: CustomEvent) => {
+  //   console.log("TOPIC", event.detail.topic);
+  return uint8ArrayToString(event.detail.data);
 };
