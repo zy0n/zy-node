@@ -1,9 +1,15 @@
 import { tcp } from "@libp2p/tcp";
 import { webSockets } from "@libp2p/websockets";
 import { type Libp2p } from "libp2p";
-import { createBaseNode, createClientNode, decodeEvent } from "./utils.js";
+import {
+  createBaseNode,
+  createClientNode,
+  decodeEvent,
+  type ValidatorFunction,
+} from "./utils.js";
 import { BOOTSTRAP_PEERS } from "./constants.js";
 import { multiaddr } from "multiaddr";
+
 export class Node {
   private libp2p: Libp2p;
   private subscriptionMap: Map<string, Array<(data: unknown) => void>> =
@@ -31,6 +37,13 @@ export class Node {
   async webClientNode() {
     const libp2p = await createClientNode([webSockets()] as never);
     return new Node(libp2p);
+  }
+
+  printMultiaddrs() {
+    console.log("Listening on:");
+    this.libp2p.getMultiaddrs().forEach((addr) => {
+      console.log(`${addr}`);
+    });
   }
 
   eventHandler(event: CustomEvent) {
@@ -64,10 +77,21 @@ export class Node {
     this.subscriptionMap.delete(topic);
   }
 
+  unsubscribeAll() {
+    console.log("Unsubscribing from all topics");
+    for (const [topic] of this.subscriptionMap) {
+      this.unsubscribe(topic);
+    }
+  }
+
   send(topic: string, data: unknown) {
     // @ts-expect-error libp2p needs proper typing
     this.libp2p.services.pubsub.publish(topic, data);
   }
 
-  //
+  // usd for fee validation
+  validator(topic: string, validatorFunc: ValidatorFunction) {
+    // @ts-expect-error libp2p needs proper typing
+    this.libp2p.services.pubsub.topicValidators.set(topic, validatorFunc);
+  }
 }
