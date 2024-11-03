@@ -39,6 +39,10 @@ export class Node {
     return new Node(libp2p);
   }
 
+  getMultiaddrs() {
+    return this.libp2p.getMultiaddrs().map((addr) => `${addr}`);
+  }
+
   printMultiaddrs() {
     console.log("Listening on:");
     this.libp2p.getMultiaddrs().forEach((addr) => {
@@ -93,5 +97,10 @@ export class Node {
   validator(topic: string, validatorFunc: ValidatorFunction) {
     // @ts-expect-error libp2p needs proper typing
     this.libp2p.services.pubsub.topicValidators.set(topic, validatorFunc);
+  }
+
+  async stop() {
+    this.unsubscribeAll();
+    await this.libp2p.stop();
   }
 }
