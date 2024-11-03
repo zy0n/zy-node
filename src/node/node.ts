@@ -35,9 +35,7 @@ export class zkNode {
   constructor(libp2p: Libp2p, bootStrapPeers: string[] = []) {
     this.libp2p = libp2p;
     this.bootStrapPeers = bootStrapPeers;
-    // this.subscriptionMap = {};
     this.setupCallbacks();
-    // connect node to bootstrap peers.
   }
 
   setupCallbacks = () => {
@@ -75,7 +73,6 @@ export class zkNode {
 
     const currentAddresses = generateNodeAddresses([8000, 60000], currentIP);
     const addresses = currentAddresses.map((addr) => {
-      //   console.log("MA", ma);
       return `${addr}/p2p/${peerId}`;
     });
     console.log("Listening On:");
@@ -94,7 +91,6 @@ export class zkNode {
     const subScriptions = this.subscriptionMap;
     if (subScriptions[topic]) {
       const callbacks = subScriptions[topic];
-      console.log("Firing off callbacks: ", callbacks?.length);
       callbacks?.forEach((callback) => {
         callback(data);
       });
@@ -104,7 +100,6 @@ export class zkNode {
   subscribe(topic: string, callback: (data: unknown) => void) {
     // @ts-expect-error libp2p needs proper typing
     this.libp2p.services.pubsub.subscribe(topic);
-    callback("dongo");
     if (this.subscriptionMap[topic]) {
       const callbacks = this.subscriptionMap[topic];
       callbacks?.push(callback);
