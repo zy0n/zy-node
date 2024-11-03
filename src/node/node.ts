@@ -1,5 +1,6 @@
 import { tcp } from "@libp2p/tcp";
 import { webSockets } from "@libp2p/websockets";
+import { PrivateKey } from "@libp2p/interface";
 import { type Libp2p } from "libp2p";
 import {
   createBaseNode,
@@ -9,34 +10,50 @@ import {
 } from "./utils.js";
 import { BOOTSTRAP_PEERS } from "./constants.js";
 import { multiaddr } from "multiaddr";
+import { fromString as uint8ArrayFromString } from "uint8arrays/from-string";
 
-export class Node {
+export const baseNode = async (privateKey?: PrivateKey) => {
+  const libp2p = await createBaseNode([8000, 60000], privateKey);
+  return new zkNode(libp2p);
+};
+
+export const clientNode = async (bootstrapPeers?: string[]) => {
+  const libp2p = await createClientNode([tcp()] as never);
+  return new zkNode(libp2p, bootstrapPeers ?? BOOTSTRAP_PEERS);
+};
+
+export const webClientNode = async (bootstrapPeers?: string[]) => {
+  const libp2p = await createClientNode([webSockets()] as never);
+  return new zkNode(libp2p, bootstrapPeers ?? BOOTSTRAP_PEERS);
+};
+export class zkNode {
   private libp2p: Libp2p;
-  private subscriptionMap: Map<string, Array<(data: unknown) => void>> =
-    new Map();
-  constructor(libp2p: Libp2p) {
+  private bootStrapPeers: string[];
+  private subscriptionMap: Record<string, ((data: unknown) => void)[]>;
+  constructor(libp2p: Libp2p, bootStrapPeers: string[] = []) {
     this.libp2p = libp2p;
+    this.bootStrapPeers = bootStrapPeers;
+    this.subscriptionMap = {};
+    this.setupCallbacks();
     // connect node to bootstrap peers.
-    if (BOOTSTRAP_PEERS.length > 0) {
-      this.libp2p.dial(BOOTSTRAP_PEERS.map((peer) => multiaddr(peer)));
+  }
+
+  setupCallbacks = () => {
+    // @ts-expect-error libp2p needs proper typing
+    this.libp2p.services.pubsub.addEventListener("message", this.eventHandler);
+  };
+
+  async connect() {
+    if (this.bootStrapPeers.length > 0) {
+      console.log("Connecting to bootstrap peers: ", this.bootStrapPeers);
+      await this.libp2p
+        .dial(this.bootStrapPeers.map((peer) => multiaddr(peer)))
+        .then(() => {
+          console.log("Connected to bootstrap peers");
+        });
     } else {
       throw new Error("No bootstrap peers provided.");
     }
-  }
-
-  async baseNode() {
-    const libp2p = await createBaseNode();
-    return new Node(libp2p);
-  }
-
-  async clientNode() {
-    const libp2p = await createClientNode([tcp()] as never);
-    return new Node(libp2p);
-  }
-
-  async webClientNode() {
-    const libp2p = await createClientNode([webSockets()] as never);
-    return new Node(libp2p);
   }
 
   getMultiaddrs() {
@@ -54,23 +71,26 @@ export class Node {
     const { topic } = event.detail;
     const decoded = decodeEvent(event);
     console.log("Received message on topic: ", topic);
-    if (this.subscriptionMap.has(topic)) {
-      const callbacks = this.subscriptionMap.get(topic);
-      console.log("Firing off callbacks: ", callbacks?.length);
-      callbacks?.forEach((callback) => {
-        callback(decoded);
-      });
-    }
+    console.log("Decoded message: ", decoded);
+    // const subScriptions = this.subscriptionMap;
+    // if (subScriptions.includes(topic)) {
+    //   const callbacks = this.subscriptionMap[topic];
+    //   console.log("Firing off callbacks: ", callbacks?.length);
+    //   callbacks?.forEach((callback) => {
+    //     callback(decoded);
+    //   });
+    // }
   }
 
   subscribe(topic: string, callback: (data: unknown) => void) {
     // @ts-expect-error libp2p needs proper typing
     this.libp2p.services.pubsub.subscribe(topic);
-    if (this.subscriptionMap.has(topic)) {
-      const callbacks = this.subscriptionMap.get(topic);
+    if (this.subscriptionMap[topic]) {
+      const callbacks = this.subscriptionMap[topic];
       callbacks?.push(callback);
     } else {
-      this.subscriptionMap.set(topic, [callback]);
+      this.subscriptionMap[topic] = [callback];
+      console.log("Subscribed to topic: ", topic);
     }
   }
 
@@ -78,19 +98,21 @@ export class Node {
     console.log("Unsubscribing from topic: ", topic);
     // @ts-expect-error libp2p needs proper typing
     this.libp2p.services.pubsub.unsubscribe(topic);
-    this.subscriptionMap.delete(topic);
+    delete this.subscriptionMap[topic];
   }
 
   unsubscribeAll() {
     console.log("Unsubscribing from all topics");
-    for (const [topic] of this.subscriptionMap) {
+    for (const topic of Object.keys(this.subscriptionMap)) {
       this.unsubscribe(topic);
     }
   }
 
   send(topic: string, data: unknown) {
+    const msgString = JSON.stringify(data);
+    const msgUint8 = uint8ArrayFromString(msgString);
     // @ts-expect-error libp2p needs proper typing
-    this.libp2p.services.pubsub.publish(topic, data);
+    this.libp2p.services.pubsub.publish(topic, msgUint8);
   }
 
   // usd for fee validation
@@ -102,5 +124,9 @@ export class Node {
   async stop() {
     this.unsubscribeAll();
     await this.libp2p.stop();
+  }
+
+  peerId() {
+    return this.libp2p.peerId;
   }
 }
