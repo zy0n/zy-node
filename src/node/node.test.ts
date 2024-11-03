@@ -26,6 +26,7 @@ const currentIP = await getIPAddress();
 
 const currentAddresses = generateNodeAddresses([8000, 60000], currentIP);
 console.log("currentAddresses", currentAddresses);
+
 describe("Node", () => {
   it("should be able to create a client node", async () => {
     const client = await webClientNode(mainMultiaddrs);
@@ -42,6 +43,7 @@ describe("Node", () => {
     });
     const interval = setInterval(() => {
       data.timestamp = Date.now();
+      console.log("Sending data: ", data);
       client.send(testTopic, data);
     }, 1000);
 
@@ -66,6 +68,7 @@ describe("Node", () => {
     });
     const interval = setInterval(() => {
       data.timestamp = Date.now();
+      console.log("Sending data: ", data);
       client.send(testTopic, data);
     }, 1000);
 

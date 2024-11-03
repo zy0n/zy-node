@@ -31,11 +31,11 @@ export const webClientNode = async (bootstrapPeers?: string[]) => {
 export class zkNode {
   private libp2p: Libp2p;
   private bootStrapPeers: string[];
-  private subscriptionMap: Record<string, ((data: unknown) => void)[]>;
+  subscriptionMap: Record<string, ((data: unknown) => void)[]> = {};
   constructor(libp2p: Libp2p, bootStrapPeers: string[] = []) {
     this.libp2p = libp2p;
     this.bootStrapPeers = bootStrapPeers;
-    this.subscriptionMap = {};
+    // this.subscriptionMap = {};
     this.setupCallbacks();
     // connect node to bootstrap peers.
   }
@@ -84,24 +84,27 @@ export class zkNode {
     });
   }
 
-  eventHandler(event: CustomEvent) {
+  eventHandler = (event: CustomEvent) => {
     const { topic } = event.detail;
     const decoded = decodeEvent(event);
-    console.log("Received message on topic: ", topic);
-    console.log("Decoded message: ", decoded);
-    // const subScriptions = this.subscriptionMap;
-    // if (subScriptions.includes(topic)) {
-    //   const callbacks = this.subscriptionMap[topic];
-    //   console.log("Firing off callbacks: ", callbacks?.length);
-    //   callbacks?.forEach((callback) => {
-    //     callback(decoded);
-    //   });
-    // }
+    this.handleSubscriptions(topic, decoded);
+  };
+
+  handleSubscriptions(topic: string, data: unknown) {
+    const subScriptions = this.subscriptionMap;
+    if (subScriptions[topic]) {
+      const callbacks = subScriptions[topic];
+      console.log("Firing off callbacks: ", callbacks?.length);
+      callbacks?.forEach((callback) => {
+        callback(data);
+      });
+    }
   }
 
   subscribe(topic: string, callback: (data: unknown) => void) {
     // @ts-expect-error libp2p needs proper typing
     this.libp2p.services.pubsub.subscribe(topic);
+    callback("dongo");
     if (this.subscriptionMap[topic]) {
       const callbacks = this.subscriptionMap[topic];
       callbacks?.push(callback);
