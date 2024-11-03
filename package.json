@@ -10,7 +10,7 @@
     "lint": "eslint src --fix",
     "clean": "rm -rf dist",
     "test": "yarn build && mocha dist/**/*.test.js",
-    "postinstall": "yarn build",
+    "postinstall": "yarn install && yarn build",
     "release": "release-it"
   },
   "author": "zy0n",
