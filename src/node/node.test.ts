@@ -37,6 +37,7 @@ describe("Node", () => {
     console.log("da", da);
     const data = {
       message: "Hello from client",
+      timestamp: Date.now(),
     };
     // const data2 = {
     //   message: "Hello from client 2",
@@ -44,10 +45,16 @@ describe("Node", () => {
     client.subscribe(testTopic, (data) => {
       console.log("Client Received data: ", data);
     });
-    setInterval(() => {
+    const interval = setInterval(() => {
       console.log("sending data");
+      data.timestamp = Date.now();
       client.send(testTopic, data);
       //   zyNode.send(testTopic, data2);
     }, 1000);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      client.stop();
+    }, 5000);
   });
 });
