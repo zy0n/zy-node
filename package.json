@@ -9,7 +9,8 @@
     "build": "yarn clean && yarn lint && tsc",
     "lint": "eslint src --fix",
     "clean": "rm -rf dist",
-    "test": "yarn build && mocha dist/**/*.test.js"
+    "test": "yarn build && mocha dist/**/*.test.js",
+    "postinstall": "yarn build"
   },
   "author": "zy0n",
   "license": "MIT",
