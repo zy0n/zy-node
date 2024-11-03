@@ -55,7 +55,9 @@ const createNode = async ({
     streamMuxers: [yamux()],
     connectionEncrypters: [noise()],
     services: {
-      pubsub: gossipsub(),
+      pubsub: gossipsub({
+        maxInboundStreams: 1000,
+      }),
       identify: identify(),
       identifyPush: identifyPush(),
     },

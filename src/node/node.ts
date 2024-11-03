@@ -41,6 +41,12 @@ export class zkNode {
   setupCallbacks = () => {
     // @ts-expect-error libp2p needs proper typing
     this.libp2p.services.pubsub.addEventListener("message", this.eventHandler);
+    this.libp2p.addEventListener("peer:discovery", (evt) => {
+      const peer = evt.detail;
+      console.log(
+        `Peer ${this.libp2p.peerId.toString()} discovered: ${peer.id.toString()}`
+      );
+    });
   };
 
   async connect() {
