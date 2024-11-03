@@ -6,6 +6,8 @@ import {
   createBaseNode,
   createClientNode,
   decodeEvent,
+  generateNodeAddresses,
+  getIPAddress,
   type ValidatorFunction,
 } from "./utils.js";
 import { BOOTSTRAP_PEERS } from "./constants.js";
@@ -64,6 +66,21 @@ export class zkNode {
     console.log("Listening on:");
     this.libp2p.getMultiaddrs().forEach((addr) => {
       console.log(`${addr}`);
+    });
+  }
+
+  async printPublicMultiaddrs() {
+    const peerId = this.libp2p.peerId;
+    const currentIP = await getIPAddress();
+
+    const currentAddresses = generateNodeAddresses([8000, 60000], currentIP);
+    const addresses = currentAddresses.map((addr) => {
+      //   console.log("MA", ma);
+      return `${addr}/p2p/${peerId}`;
+    });
+    console.log("Listening On:");
+    addresses.forEach((addr) => {
+      console.log(addr);
     });
   }
 

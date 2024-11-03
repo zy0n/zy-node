@@ -1,5 +1,5 @@
 import { beforeEach, describe, it } from "node:test";
-import { baseNode, clientNode, type zkNode } from "./node.js";
+import { baseNode, webClientNode, type zkNode } from "./node.js";
 import {
   generateNodeAddresses,
   generatePrivateKey,
@@ -20,30 +20,23 @@ const currentIP = await getIPAddress();
 
 const currentAddresses = generateNodeAddresses([8000, 60000], currentIP);
 console.log("currentAddresses", currentAddresses);
-const newAddresses: string[] = [];
+// const newAddresses: string[] = [];
 describe("Node", () => {
   let zyNode: zkNode;
   beforeEach(async () => {
     zyNode = await baseNode(mainPrivateKey);
-    // await zyNode.connect();
     // no need to connect to bootstrap peers
     mainMultiaddrs.push(...zyNode.getMultiaddrs());
     zyNode.subscribe(testTopic, (data) => {
       console.log("Node Received data: ", data);
     });
-    const addresses = currentAddresses.map((addr) => {
-      const ma = zyNode.peerId();
-      console.log("MA", ma);
-      return `${addr}/p2p/${ma}`;
-    });
-    console.log("addresses", addresses);
-    newAddresses.push(...addresses);
+    zyNode.printPublicMultiaddrs();
   });
   it("should be able to create a client node", async () => {
     // test goes here
-    const client = await clientNode(mainMultiaddrs);
+    const client = await webClientNode(mainMultiaddrs);
     await client.connect();
-    console.log("client", client);
+    // console.log("client", client);
     client.printMultiaddrs();
     const da = client.getMultiaddrs();
     console.log("da", da);
