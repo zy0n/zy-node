@@ -4,6 +4,7 @@ import {
   it,
 } from "node:test";
 import {
+  clientNode,
   //   baseNode,
   webClientNode,
   // type zkNode
@@ -25,13 +26,10 @@ const currentIP = await getIPAddress();
 
 const currentAddresses = generateNodeAddresses([8000, 60000], currentIP);
 console.log("currentAddresses", currentAddresses);
-// const newAddresses: string[] = [];
 describe("Node", () => {
   it("should be able to create a client node", async () => {
-    // test goes here
     const client = await webClientNode(mainMultiaddrs);
     await client.connect();
-    // console.log("client", client);
     client.printMultiaddrs();
     const da = client.getMultiaddrs();
     console.log("da", da);
@@ -39,17 +37,36 @@ describe("Node", () => {
       message: "Hello from client",
       timestamp: Date.now(),
     };
-    // const data2 = {
-    //   message: "Hello from client 2",
-    // };
     client.subscribe(testTopic, (data) => {
       console.log("Client Received data: ", data);
     });
     const interval = setInterval(() => {
-      console.log("sending data");
       data.timestamp = Date.now();
       client.send(testTopic, data);
-      //   zyNode.send(testTopic, data2);
+    }, 1000);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      client.stop();
+    }, 5000);
+  });
+
+  it("should be able to create a second client node", async () => {
+    const client = await clientNode(mainMultiaddrs);
+    await client.connect();
+    client.printMultiaddrs();
+    const da = client.getMultiaddrs();
+    console.log("da", da);
+    const data = {
+      message: "Hello from Second client",
+      timestamp: Date.now(),
+    };
+    client.subscribe(testTopic, (data) => {
+      console.log("Second Client Received data: ", data);
+    });
+    const interval = setInterval(() => {
+      data.timestamp = Date.now();
+      client.send(testTopic, data);
     }, 1000);
 
     setTimeout(() => {
