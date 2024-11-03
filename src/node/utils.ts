@@ -71,8 +71,6 @@ export const generateNodeAddresses = (ports?: number[], ip?: string) => {
 
   const ipAddress = ip ?? "0.0.0.0";
   if (typeof ports !== "undefined") {
-    console.log("PORTS", ports);
-    console.log("were here");
     if (ports.length > 0) {
       addresses.push(`/ip4/${ipAddress}/tcp/${ports[0]}`);
       if (ports.length > 1) {
