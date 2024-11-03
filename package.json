@@ -4,6 +4,13 @@
   "description": "libp2p pubsub messaging client",
   "main": "dist/index.js",
   "type": "module",
+  "files": [
+    "dist/**/*",
+    "*.js"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
   "scripts": {
     "dev": "ts-node src/index.ts",
     "build": "yarn clean && yarn lint && tsc",
