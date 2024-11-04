@@ -41,6 +41,7 @@
     "@chainsafe/libp2p-gossipsub": "^14.1.0",
     "@chainsafe/libp2p-noise": "^16.0.0",
     "@chainsafe/libp2p-yamux": "^7.0.1",
+    "@libp2p/circuit-relay-v2": "^3.1.0",
     "@libp2p/identify": "^3.0.10",
     "@libp2p/peer-id-factory": "^4.2.4",
     "@libp2p/tcp": "^10.0.11",

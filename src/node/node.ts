@@ -49,8 +49,8 @@ export class zkNode {
     });
 
     this.libp2p.addEventListener("connection:close", async (evt) => {
-      const peer = await evt.detail.close();
-      console.log(`Connection to peer ${peer} closed`);
+      await evt.detail.close();
+      console.log(`Connection to peer ${evt.detail.remotePeer} closed`);
     });
 
     this.libp2p.addEventListener("peer:disconnect", (evt) => {

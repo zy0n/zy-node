@@ -220,6 +220,31 @@
   resolved "https://registry.yarnpkg.com/@leichtgewicht/ip-codec/-/ip-codec-2.0.5.tgz#4fc56c15c580b9adb7dc3c333a134e540b44bfb1"
   integrity sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==
 
+"@libp2p/circuit-relay-v2@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@libp2p/circuit-relay-v2/-/circuit-relay-v2-3.1.0.tgz#bc5b10f19aa3ee1349c3c7f7e482c4ea0a0cd54b"
+  integrity sha512-g9AdFhT93P8Uc7sOKeAdULDKF+Tf/aGwnECWZMRo3GFIsvpbd06VdmnjqGmF9xSdll0NWPe8EwhI098rMRd7OQ==
+  dependencies:
+    "@libp2p/crypto" "^5.0.6"
+    "@libp2p/interface" "^2.2.0"
+    "@libp2p/interface-internal" "^2.0.10"
+    "@libp2p/peer-collections" "^6.0.10"
+    "@libp2p/peer-id" "^5.0.7"
+    "@libp2p/peer-record" "^8.0.10"
+    "@libp2p/utils" "^6.1.3"
+    "@multiformats/multiaddr" "^12.2.3"
+    "@multiformats/multiaddr-matcher" "^1.3.0"
+    any-signal "^4.1.1"
+    it-protobuf-stream "^1.1.3"
+    it-stream-types "^2.0.1"
+    multiformats "^13.1.0"
+    nanoid "^5.0.7"
+    progress-events "^1.0.0"
+    protons-runtime "^5.4.0"
+    retimeable-signal "^0.0.0"
+    uint8arraylist "^2.4.8"
+    uint8arrays "^5.1.0"
+
 "@libp2p/crypto@^4.1.9":
   version "4.1.9"
   resolved "https://registry.yarnpkg.com/@libp2p/crypto/-/crypto-4.1.9.tgz#d490e7bfc7200678e878d31172ff60db04942017"
@@ -506,7 +531,7 @@
   dependencies:
     "@multiformats/multiaddr" "^12.0.0"
 
-"@multiformats/multiaddr-matcher@^1.2.1", "@multiformats/multiaddr-matcher@^1.4.0":
+"@multiformats/multiaddr-matcher@^1.2.1", "@multiformats/multiaddr-matcher@^1.3.0", "@multiformats/multiaddr-matcher@^1.4.0":
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/@multiformats/multiaddr-matcher/-/multiaddr-matcher-1.4.0.tgz#d4934eb6350320fc05044850974ce558b1d212b4"
   integrity sha512-Riu+JbTolhzAEgZH3xexLKVn2Oe+xUEPCNHuURqKcE9Pa3RxwsuhldykUWmbsDifXOV4TJCc1LGADFHmpS1y5w==
@@ -2681,6 +2706,11 @@ mute-stream@1.0.0:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-1.0.0.tgz#e31bd9fe62f0aed23520aa4324ea6671531e013e"
   integrity sha512-avsJQhyd+680gKXyG/sQc0nXaC6rBkPOfyHYcFb9+hdkqQkR9bdnkJ0AMZhke0oesPqIO+mFFJ+IdBc7mst4IA==
 
+nanoid@^5.0.7:
+  version "5.0.8"
+  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-5.0.8.tgz#7610003f6b3b761b5c244bb342c112c5312512bf"
+  integrity sha512-TcJPw+9RV9dibz1hHUzlLVy8N4X9TnwirAjrU08Juo6BNKggzVfP2ZJ/3ZUSq15Xl5i85i+Z89XBO90pB2PghQ==
+
 native-fetch@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/native-fetch/-/native-fetch-3.0.0.tgz#06ccdd70e79e171c365c75117959cf4fe14a09bb"
@@ -3188,6 +3218,11 @@ restore-cursor@^5.0.0:
   dependencies:
     onetime "^7.0.0"
     signal-exit "^4.1.0"
+
+retimeable-signal@^0.0.0:
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/retimeable-signal/-/retimeable-signal-0.0.0.tgz#5a7f08153205b77404c50b3ca121dec2d6e4927f"
+  integrity sha512-jxnBbSwD7khkZIf0cnD6j3BVawwhrbcT4y1WWWZq14l5Ds+z+csataLeBSRtKVqn5tjuT4WPCbMDJLKI2C/WUA==
 
 retry@0.13.1, retry@^0.13.1:
   version "0.13.1"
