@@ -86,7 +86,22 @@ const createNode = async ({
     // node/native need TCP only
     // web need WebSockets only
     transports: transports ?? [tcp(), webSockets()],
-    streamMuxers: [yamux()],
+    streamMuxers: [
+      yamux({
+        //   /**
+        //    * The total number of inbound protocol streams that can be opened on a given connection
+        //    *
+        //    * This field is optional, the default value is shown
+        //    */
+        //   maxInboundStreams: 100,
+        //   /**
+        //    * The total number of outbound protocol streams that can be opened on a given connection
+        //    *
+        //    * This field is optional, the default value is shown
+        //    */
+        //   maxOutboundStreams: 100,
+      }),
+    ],
     connectionEncrypters: [noise()],
 
     services: {
@@ -98,6 +113,23 @@ const createNode = async ({
       identifyPush: identifyPush(),
     },
     privateKey: privateKey ?? (await generatePrivateKey(randomBytes(32))),
+    connectionManager: {
+      /**
+       * The total number of connections allowed to be open at one time
+       */
+      maxConnections: 100,
+
+      /**
+       * How many connections can be open but not yet upgraded
+       */
+      maxIncomingPendingConnections: 100,
+
+      /**
+       * A remote peer may attempt to open up to this many connections per second,
+       * any more than that will be automatically rejected
+       */
+      // inboundConnectionThreshold: 100,
+    },
   };
 
   const node = await createLibp2p(options);

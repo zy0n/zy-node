@@ -10,11 +10,11 @@ import {
   type zkNode,
   // type zkNode
 } from "./node.js";
-import {
-  generateNodeAddresses,
-  //   generatePrivateKey,
-  getIPAddress,
-} from "./utils.js";
+// import {
+//   generateNodeAddresses,
+//   //   generatePrivateKey,
+//   getIPAddress,
+// } from "./utils.js";
 // import { generateSeed } from "./utils.js";
 
 const testTopic = "test-topic";
@@ -23,10 +23,10 @@ const mainMultiaddrs: string[] = [
   "/ip4/3.80.109.148/tcp/8000/p2p/12D3KooWT19bnNKeLFPBHAtz1WhWrgiqJB76T6ikVwV4MCxtGjvd",
   "/ip4/3.80.109.148/tcp/60000/ws/p2p/12D3KooWT19bnNKeLFPBHAtz1WhWrgiqJB76T6ikVwV4MCxtGjvd",
 ];
-const currentIP = await getIPAddress();
+// const currentIP = await getIPAddress();
 
-const currentAddresses = generateNodeAddresses([8000, 60000], currentIP);
-console.log("currentAddresses", currentAddresses);
+// const currentAddresses = generateNodeAddresses([8000, 60000], currentIP);
+// console.log("currentAddresses", currentAddresses);
 let nodeCount = 0;
 const spawnNode = async () => {
   const node = await clientNode(mainMultiaddrs);
@@ -40,13 +40,13 @@ const spawnNode = async () => {
   return node;
 };
 
+let chatterCount = 0;
 const spawnChatter = async (node: zkNode, index: number) => {
-  const data = {
-    message: `Hello from client ${index}`,
-    timestamp: Date.now(),
-  };
-
   const interval = setInterval(() => {
+    const data = {
+      message: `${++chatterCount} Hello from client ${index}`,
+      timestamp: Date.now(),
+    };
     data.timestamp = Date.now();
     node.send(testTopic, data);
   }, 1000);
@@ -54,7 +54,7 @@ const spawnChatter = async (node: zkNode, index: number) => {
   setTimeout(async () => {
     clearInterval(interval);
     await node.stop();
-  }, 10000);
+  }, 300000);
 };
 
 // const killNodes = (nodes: zkNode[]) => {
@@ -67,13 +67,13 @@ const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 const runSequence = async () => {
   const nodes: zkNode[] = [];
-  const randomSeconds = 1000 * (Math.floor(Math.random() * 5) + 10);
+  //   const randomSeconds = 1000 * (Math.floor(Math.random() * 5) + 10);
   for (let i = 0; i < 5; i++) {
     spawnNode().then((node) => {
       nodes.push(node);
       spawnChatter(node, i);
     });
-    await delay(randomSeconds);
+    await delay(1000);
   }
 
   //   setTimeout(() => {
