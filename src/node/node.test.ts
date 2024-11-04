@@ -54,7 +54,7 @@ const spawnChatter = async (node: zkNode, index: number) => {
   setTimeout(async () => {
     clearInterval(interval);
     await node.stop();
-  }, 300000);
+  }, 30000);
 };
 
 // const killNodes = (nodes: zkNode[]) => {

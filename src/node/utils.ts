@@ -128,7 +128,7 @@ const createNode = async ({
        * A remote peer may attempt to open up to this many connections per second,
        * any more than that will be automatically rejected
        */
-      // inboundConnectionThreshold: 100,
+      inboundConnectionThreshold: 100,
     },
   };
 
