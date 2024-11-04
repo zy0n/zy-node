@@ -47,9 +47,15 @@ export class zkNode {
         `Peer ${this.libp2p.peerId.toString()} discovered: ${peer.id.toString()}`
       );
     });
+
     this.libp2p.addEventListener("connection:close", async (evt) => {
       const peer = await evt.detail.close();
       console.log(`Connection to peer ${peer} closed`);
+    });
+
+    this.libp2p.addEventListener("peer:disconnect", (evt) => {
+      const peer = evt.detail;
+      console.log(`Peer ${peer} disconnected`);
     });
   };
 
