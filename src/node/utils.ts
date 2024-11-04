@@ -2,6 +2,10 @@ import { gossipsub, type GossipsubEvents } from "@chainsafe/libp2p-gossipsub";
 import { noise } from "@chainsafe/libp2p-noise";
 import { yamux } from "@chainsafe/libp2p-yamux";
 import {
+  circuitRelayServer,
+  type CircuitRelayService,
+} from "@libp2p/circuit-relay-v2";
+import {
   identify,
   identifyPush,
   type Identify,
@@ -14,6 +18,7 @@ import {
 } from "@libp2p/interface";
 import { tcp } from "@libp2p/tcp";
 import { webSockets } from "@libp2p/websockets";
+import * as filters from "@libp2p/websockets/filters";
 import { createLibp2p, type Libp2p } from "libp2p";
 
 // import { multiaddr } from "multiaddr";
@@ -40,6 +45,35 @@ type CreateNodeOptions = {
   privateKey?: PrivateKey;
 };
 
+const createRelayNode = async ({
+  addresses,
+  privateKey,
+}: CreateNodeOptions) => {
+  const node = await createLibp2p({
+    addresses: {
+      listen: addresses ?? ["/ip4/0.0.0.0/tcp/0", "/ip4/0.0.0.0/tcp/0/ws"],
+    },
+    transports: [
+      tcp(),
+      webSockets({
+        filter: filters.all,
+      }),
+    ],
+    connectionEncrypters: [noise()],
+    streamMuxers: [yamux()],
+    services: {
+      identify: identify(),
+      relay: circuitRelayServer({
+        reservations: {
+          maxReservations: Infinity,
+        },
+      }),
+    },
+    privateKey: privateKey ?? (await generatePrivateKey(randomBytes(32))),
+  });
+  return node;
+};
+
 const createNode = async ({
   addresses,
   transports,
@@ -54,8 +88,11 @@ const createNode = async ({
     transports: transports ?? [tcp(), webSockets()],
     streamMuxers: [yamux()],
     connectionEncrypters: [noise()],
+
     services: {
-      pubsub: gossipsub(),
+      pubsub: gossipsub({
+        runOnLimitedConnection: true,
+      }),
       identify: identify(),
       identifyPush: identifyPush(),
     },
@@ -71,8 +108,6 @@ export const generateNodeAddresses = (ports?: number[], ip?: string) => {
 
   const ipAddress = ip ?? "0.0.0.0";
   if (typeof ports !== "undefined") {
-    console.log("PORTS", ports);
-    console.log("were here");
     if (ports.length > 0) {
       addresses.push(`/ip4/${ipAddress}/tcp/${ports[0]}`);
       if (ports.length > 1) {
@@ -91,7 +126,7 @@ export const createBaseNode = async (
   // Create a libp2p node
   // 'network' nodes
   const addresses = generateNodeAddresses(ports);
-  const node = await createNode({ addresses, privateKey });
+  const node = await createRelayNode({ addresses, privateKey });
   return node;
 };
 
@@ -110,11 +145,16 @@ export const decodeEvent = (event: CustomEvent) => {
   return uint8ArrayToString(event.detail.data);
 };
 
-export type Libp2pNode = Libp2p<{
-  pubsub: PubSub<GossipsubEvents>;
-  identify: Identify;
-  identifyPush: IdentifyPush;
-}>;
+export type Libp2pNode =
+  | Libp2p<{
+      pubsub: PubSub<GossipsubEvents>;
+      identify: Identify;
+      identifyPush: IdentifyPush;
+    }>
+  | Libp2p<{
+      identify: Identify;
+      relay: CircuitRelayService;
+    }>;
 
 export const validateSender = (
   msgTopic: string,

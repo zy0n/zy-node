@@ -31,18 +31,26 @@ export const webClientNode = async (bootstrapPeers?: string[]) => {
 export class zkNode {
   private libp2p: Libp2p;
   private bootStrapPeers: string[];
-  private subscriptionMap: Record<string, ((data: unknown) => void)[]>;
+  subscriptionMap: Record<string, ((data: unknown) => void)[]> = {};
   constructor(libp2p: Libp2p, bootStrapPeers: string[] = []) {
     this.libp2p = libp2p;
     this.bootStrapPeers = bootStrapPeers;
-    this.subscriptionMap = {};
     this.setupCallbacks();
-    // connect node to bootstrap peers.
   }
 
   setupCallbacks = () => {
     // @ts-expect-error libp2p needs proper typing
     this.libp2p.services.pubsub.addEventListener("message", this.eventHandler);
+    this.libp2p.addEventListener("peer:discovery", (evt) => {
+      const peer = evt.detail;
+      console.log(
+        `Peer ${this.libp2p.peerId.toString()} discovered: ${peer.id.toString()}`
+      );
+    });
+    this.libp2p.addEventListener("connection:close", async (evt) => {
+      await evt.detail.close();
+      console.log(`Connection to peer ${evt.detail.remotePeer} closed`);
+    });
   };
 
   async connect() {
@@ -75,7 +83,6 @@ export class zkNode {
 
     const currentAddresses = generateNodeAddresses([8000, 60000], currentIP);
     const addresses = currentAddresses.map((addr) => {
-      //   console.log("MA", ma);
       return `${addr}/p2p/${peerId}`;
     });
     console.log("Listening On:");
@@ -84,19 +91,20 @@ export class zkNode {
     });
   }
 
-  eventHandler(event: CustomEvent) {
+  eventHandler = (event: CustomEvent) => {
     const { topic } = event.detail;
     const decoded = decodeEvent(event);
-    console.log("Received message on topic: ", topic);
-    console.log("Decoded message: ", decoded);
-    // const subScriptions = this.subscriptionMap;
-    // if (subScriptions.includes(topic)) {
-    //   const callbacks = this.subscriptionMap[topic];
-    //   console.log("Firing off callbacks: ", callbacks?.length);
-    //   callbacks?.forEach((callback) => {
-    //     callback(decoded);
-    //   });
-    // }
+    this.handleSubscriptions(topic, decoded);
+  };
+
+  handleSubscriptions(topic: string, data: unknown) {
+    const subScriptions = this.subscriptionMap;
+    if (subScriptions[topic]) {
+      const callbacks = subScriptions[topic];
+      callbacks?.forEach((callback) => {
+        callback(data);
+      });
+    }
   }
 
   subscribe(topic: string, callback: (data: unknown) => void) {
@@ -140,6 +148,17 @@ export class zkNode {
 
   async stop() {
     this.unsubscribeAll();
+
+    // if (this.bootStrapPeers.length > 0) {
+    //   console.log("Connecting to bootstrap peers: ", this.bootStrapPeers);
+    //   this.bootStrapPeers.forEach(async (peer) => {
+    //     await this.libp2p.hangUp(multiaddr(peer));
+    //   });
+    // }
+    this.libp2p.getConnections().forEach((conn: unknown) => {
+      // @ts-expect-error libp2p needs proper typing
+      conn.close();
+    });
     await this.libp2p.stop();
   }
 
