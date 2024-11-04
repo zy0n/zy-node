@@ -20,8 +20,8 @@ import {
 const testTopic = "test-topic";
 
 const mainMultiaddrs: string[] = [
-  "/ip4/54.167.24.167/tcp/8000/p2p/12D3KooWT19bnNKeLFPBHAtz1WhWrgiqJB76T6ikVwV4MCxtGjvd",
-  "/ip4/54.167.24.167/tcp/60000/ws/p2p/12D3KooWT19bnNKeLFPBHAtz1WhWrgiqJB76T6ikVwV4MCxtGjvd",
+  "/ip4/3.80.109.148/tcp/8000/p2p/12D3KooWT19bnNKeLFPBHAtz1WhWrgiqJB76T6ikVwV4MCxtGjvd",
+  "/ip4/3.80.109.148/tcp/60000/ws/p2p/12D3KooWT19bnNKeLFPBHAtz1WhWrgiqJB76T6ikVwV4MCxtGjvd",
 ];
 const currentIP = await getIPAddress();
 

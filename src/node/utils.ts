@@ -92,6 +92,7 @@ const createNode = async ({
     services: {
       pubsub: gossipsub({
         runOnLimitedConnection: true,
+        allowPublishToZeroTopicPeers: true,
       }),
       identify: identify(),
       identifyPush: identifyPush(),
@@ -126,7 +127,7 @@ export const createBaseNode = async (
   // Create a libp2p node
   // 'network' nodes
   const addresses = generateNodeAddresses(ports);
-  const node = await createRelayNode({ addresses, privateKey });
+  const node = await createNode({ addresses, privateKey });
   return node;
 };
 
