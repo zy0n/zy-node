@@ -47,6 +47,10 @@ export class zkNode {
         `Peer ${this.libp2p.peerId.toString()} discovered: ${peer.id.toString()}`
       );
     });
+    this.libp2p.addEventListener("connection:close", async (evt) => {
+      const peer = await evt.detail.close();
+      console.log(`Connection to peer ${peer} closed`);
+    });
   };
 
   async connect() {
@@ -144,6 +148,17 @@ export class zkNode {
 
   async stop() {
     this.unsubscribeAll();
+
+    // if (this.bootStrapPeers.length > 0) {
+    //   console.log("Connecting to bootstrap peers: ", this.bootStrapPeers);
+    //   this.bootStrapPeers.forEach(async (peer) => {
+    //     await this.libp2p.hangUp(multiaddr(peer));
+    //   });
+    // }
+    this.libp2p.getConnections().forEach((conn: unknown) => {
+      // @ts-expect-error libp2p needs proper typing
+      conn.close();
+    });
     await this.libp2p.stop();
   }
 
