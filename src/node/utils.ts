@@ -45,7 +45,7 @@ type CreateNodeOptions = {
   privateKey?: PrivateKey;
 };
 
-const createRelayNode = async ({
+export const createRelayNode = async ({
   addresses,
   privateKey,
 }: CreateNodeOptions) => {
