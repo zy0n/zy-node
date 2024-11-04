@@ -40,7 +40,7 @@ export class zkNode {
 
   setupCallbacks = () => {
     // @ts-expect-error libp2p needs proper typing
-    this.libp2p.services.pubsub.addEventListener("message", this.eventHandler);
+    this.libp2p.services.pubsub?.addEventListener("message", this.eventHandler);
     this.libp2p.addEventListener("peer:discovery", (evt) => {
       const peer = evt.detail;
       console.log(
@@ -115,7 +115,7 @@ export class zkNode {
 
   subscribe(topic: string, callback: (data: unknown) => void) {
     // @ts-expect-error libp2p needs proper typing
-    this.libp2p.services.pubsub.subscribe(topic);
+    this.libp2p.services.pubsub?.subscribe(topic);
     if (this.subscriptionMap[topic]) {
       const callbacks = this.subscriptionMap[topic];
       callbacks?.push(callback);
@@ -128,7 +128,7 @@ export class zkNode {
   unsubscribe(topic: string) {
     console.log("Unsubscribing from topic: ", topic);
     // @ts-expect-error libp2p needs proper typing
-    this.libp2p.services.pubsub.unsubscribe(topic);
+    this.libp2p.services.pubsub?.unsubscribe(topic);
     delete this.subscriptionMap[topic];
   }
 
@@ -143,7 +143,7 @@ export class zkNode {
     const msgString = JSON.stringify(data);
     const msgUint8 = uint8ArrayFromString(msgString);
     // @ts-expect-error libp2p needs proper typing
-    this.libp2p.services.pubsub.publish(topic, msgUint8);
+    this.libp2p.services.pubsub?.publish(topic, msgUint8);
   }
 
   // usd for fee validation
