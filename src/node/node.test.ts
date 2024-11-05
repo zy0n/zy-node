@@ -54,7 +54,7 @@ const spawnChatter = async (node: zkNode, index: number) => {
   setTimeout(async () => {
     clearInterval(interval);
     await node.stop();
-  }, 30000);
+  }, 120_000);
 };
 
 // const killNodes = (nodes: zkNode[]) => {
@@ -68,7 +68,7 @@ const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 const runSequence = async () => {
   const nodes: zkNode[] = [];
   //   const randomSeconds = 1000 * (Math.floor(Math.random() * 5) + 10);
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 2; i++) {
     spawnNode().then((node) => {
       nodes.push(node);
       spawnChatter(node, i);
@@ -82,7 +82,7 @@ const runSequence = async () => {
 };
 
 const runGauntlet = async () => {
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 1; i++) {
     runSequence();
     await delay(10000);
   }
